@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie Nom → Google Sheet</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f4f7f9; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        input { padding: 12px; font-size: 18px; width: 80%; margin: 20px 0; }
+        button { padding: 12px 30px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #message { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enregistrer un nom</h1>
+        <input type="text" id="nom" placeholder="Votre nom" required>
+        <br><br>
+        <button onclick="enregistrer()">Enregistrer dans la Sheet</button>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        async function enregistrer() {
+            const nom = document.getElementById('nom').value.trim();
+            if (!nom) {
+                alert("Veuillez entrer un nom");
+                return;
+            }
+
+            const date = new Date().toLocaleDateString('fr-FR');
+
+            const message = document.getElementById('message');
+            message.textContent = "Enregistrement en cours...";
+
+            try {
+                const res = await fetch('/api/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, nom })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    message.style.color = "green";
+                    message.textContent = "✅ Enregistré avec succès !";
+                    document.getElementById('nom').value = "";
+                } else {
+                    throw new Error(data.error || "Erreur inconnue");
+                }
+            } catch (err) {
+                message.style.color = "red";
+                message.textContent = "❌ Erreur : " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
